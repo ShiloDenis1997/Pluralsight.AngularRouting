@@ -12,7 +12,7 @@ import { SharedModule } from '../shared/shared.module';
 import { ProductResolverService } from './product-resolver.service';
 import { ProductEditInfoComponent } from './product-edit-info.component';
 import { ProductEditTagsComponent } from './product-edit-tags.component';
-import { AuthGuardService } from '../user/auth.guard.service';
+import { ProductEditGuardService } from './product.guard.service';
 
 @NgModule({
     imports: [
@@ -20,33 +20,28 @@ import { AuthGuardService } from '../user/auth.guard.service';
         RouterModule.forChild([
             {
                 path: '',
-                canActivate: [AuthGuardService],
+                component: ProductListComponent,
+                data: { pageTitle: 'Products List' }
+            },
+            {
+                path: ':id',
+                component: ProductDetailComponent,
+                resolve: { product: ProductResolverService }
+            },
+            {
+                path: ':id/edit',
+                component: ProductEditComponent,
+                canDeactivate: [ProductEditGuardService],
+                resolve: { product: ProductResolverService },
                 children: [
                     {
-                        path: '',
-                        component: ProductListComponent,
-                        data: { pageTitle: 'Products List' }
+                        path: '', redirectTo: 'info', pathMatch: 'full'
                     },
                     {
-                        path: ':id',
-                        component: ProductDetailComponent,
-                        resolve: { product: ProductResolverService }
+                        path: 'info', component: ProductEditInfoComponent
                     },
                     {
-                        path: ':id/edit',
-                        component: ProductEditComponent,
-                        resolve: { product: ProductResolverService },
-                        children: [
-                            {
-                                path: '', redirectTo: 'info', pathMatch: 'full'
-                            },
-                            {
-                                path: 'info', component: ProductEditInfoComponent
-                            },
-                            {
-                                path: 'tags', component: ProductEditTagsComponent
-                            }
-                        ]
+                        path: 'tags', component: ProductEditTagsComponent
                     }
                 ]
             }
@@ -62,7 +57,8 @@ import { AuthGuardService } from '../user/auth.guard.service';
     ],
     providers: [
         ProductService,
-        ProductResolverService
+        ProductResolverService,
+        ProductEditGuardService
     ]
 })
 export class ProductModule { }
